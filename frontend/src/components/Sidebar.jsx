@@ -8,57 +8,61 @@ const Sidebar = () => {
   const { users, activeContact, setActiveContact } = useSocket();
   const [search, setSearch] = useState('');
 
-  // Filter users based on search query
   const filteredUsers = users.filter((u) =>
     u.username.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Get avatar styling and initials based on username & gender
   const getAvatarInfo = (username, gender) => {
     const initials = username.substring(0, 2).toUpperCase();
-    let gradient = 'linear-gradient(135deg, #1e3c72, #2a5298)'; // Default blue
-    
-    if (gender === 'Female') {
-      gradient = 'linear-gradient(135deg, #ec008c, #fc6767)'; // Pink/Red
-    } else if (gender === 'Other') {
-      gradient = 'linear-gradient(135deg, #f12711, #f5af19)'; // Orange/Yellow
-    } else if (gender === 'Male') {
-      gradient = 'linear-gradient(135deg, #4facfe, #00f2fe)'; // Neon Blue/Green
-    }
-
+    let gradient = 'linear-gradient(135deg, #1e3c72, #2a5298)';
+    if (gender === 'Female') gradient = 'linear-gradient(135deg, #ec008c, #fc6767)';
+    else if (gender === 'Other') gradient = 'linear-gradient(135deg, #f59e0b, #ef4444)';
+    else if (gender === 'Male') gradient = 'linear-gradient(135deg, #00d4aa, #0ea5e9)';
     return { initials, gradient };
   };
 
   const formatTime = (isoString) => {
     if (!isoString) return '';
-    const date = new Date(isoString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
+
+  const myAvatar = getAvatarInfo(user?.username || '', user?.gender || '');
 
   return (
     <div className="sidebar-container">
-      {/* Logged in User Profile Header */}
-      <div className="profile-header">
-        <div className="user-info">
-          <div 
-            className="avatar-circle"
-            style={{ background: getAvatarInfo(user?.username || '', user?.gender || '').gradient }}
-          >
-            {getAvatarInfo(user?.username || '', user?.gender || '').initials}
-          </div>
-          <div className="user-details">
-            <h3>{user?.username}</h3>
-            <span>{user?.gender || 'User'} • Online</span>
-          </div>
+      {/* Brand Header */}
+      <div className="sidebar-brand">
+        <div className="brand-logo-small">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
         </div>
+        <span className="brand-label">NexChat</span>
         <button onClick={logout} className="btn-logout" title="Log Out">
-          <LogOut size={18} />
+          <LogOut size={16} />
         </button>
+      </div>
+
+      {/* Profile Row */}
+      <div className="profile-row">
+        <div
+          className="avatar-circle"
+          style={{ background: myAvatar.gradient }}
+        >
+          {myAvatar.initials}
+        </div>
+        <div className="profile-info">
+          <h3>{user?.username}</h3>
+          <span className="online-badge">
+            <span className="online-dot" />
+            Online
+          </span>
+        </div>
       </div>
 
       {/* Search Bar */}
       <div className="search-bar">
-        <Search size={18} className="search-icon" />
+        <Search size={15} className="search-icon" />
         <input
           type="text"
           placeholder="Search contacts..."
@@ -67,19 +71,24 @@ const Sidebar = () => {
         />
       </div>
 
+      {/* Contacts Label */}
+      <div className="contacts-label">
+        <span>Contacts</span>
+        <span className="contacts-count">{filteredUsers.length}</span>
+      </div>
+
       {/* Contacts List */}
       <div className="contacts-list">
-        <h2>Active Chats</h2>
         {filteredUsers.length === 0 ? (
           <div className="empty-contacts">
-            <MessageSquare size={32} />
+            <MessageSquare size={28} />
             <p>No contacts found</p>
           </div>
         ) : (
           filteredUsers.map((u) => {
             const avatar = getAvatarInfo(u.username, u.gender);
             const isActive = activeContact?.id === u.id;
-            
+
             return (
               <div
                 key={u.id}
@@ -90,9 +99,9 @@ const Sidebar = () => {
                   <div className="avatar-circle" style={{ background: avatar.gradient }}>
                     {avatar.initials}
                   </div>
-                  <span className={`status-dot ${u.status ? 'online' : 'offline'}`}></span>
+                  <span className={`status-dot ${u.status ? 'online' : 'offline'}`} />
                 </div>
-                
+
                 <div className="contact-details">
                   <div className="contact-meta">
                     <h4>{u.username}</h4>
@@ -110,115 +119,176 @@ const Sidebar = () => {
 
       <style>{`
         .sidebar-container {
-          width: 320px;
+          width: 300px;
           height: 100%;
           border-right: 1px solid var(--border-glass);
           display: flex;
           flex-direction: column;
           flex-shrink: 0;
+          background: rgba(0, 0, 0, 0.2);
         }
 
-        .profile-header {
-          padding: 24px;
+        /* Brand header */
+        .sidebar-brand {
+          padding: 18px 20px;
           display: flex;
           align-items: center;
-          justify-content: space-between;
+          gap: 10px;
           border-bottom: 1px solid var(--border-glass);
         }
 
-        .user-info {
-          display: flex;
-          align-items: center;
-          gap: 12px;
+        .brand-logo-small {
+          width: 34px; height: 34px;
+          border-radius: 10px;
+          background: linear-gradient(135deg, #00d4aa, #0ea5e9);
+          display: flex; align-items: center; justify-content: center;
+          color: #060a14;
+          flex-shrink: 0;
+          box-shadow: 0 4px 12px rgba(0, 212, 170, 0.25);
         }
 
-        .avatar-circle {
-          width: 42px;
-          height: 42px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 700;
-          font-size: 0.9rem;
-          color: white;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-          text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-        }
-
-        .user-details h3 {
-          font-size: 0.95rem;
-          font-weight: 600;
-          color: var(--text-primary);
-        }
-
-        .user-details span {
-          font-size: 0.75rem;
-          color: var(--text-muted);
+        .brand-label {
+          font-size: 1.1rem;
+          font-weight: 800;
+          background: linear-gradient(135deg, #00d4aa, #0ea5e9);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          flex: 1;
+          letter-spacing: -0.3px;
         }
 
         .btn-logout {
-          color: var(--text-secondary);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
-          background: rgba(255, 255, 255, 0.02);
+          color: var(--text-muted);
+          display: flex; align-items: center; justify-content: center;
+          width: 32px; height: 32px;
+          border-radius: 9px;
+          background: rgba(255,255,255,0.02);
           border: 1px solid var(--border-glass);
+          transition: all 0.2s ease;
         }
 
         .btn-logout:hover {
-          color: #ff5599;
-          background: rgba(255, 0, 128, 0.05);
-          border-color: rgba(255, 0, 128, 0.15);
+          color: #f87171;
+          background: rgba(239, 68, 68, 0.08);
+          border-color: rgba(239, 68, 68, 0.2);
         }
 
+        /* Profile row */
+        .profile-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px 20px;
+          border-bottom: 1px solid var(--border-glass);
+        }
+
+        .profile-info h3 {
+          font-size: 0.92rem;
+          font-weight: 600;
+          color: var(--text-primary);
+          margin-bottom: 3px;
+        }
+
+        .online-badge {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 0.75rem;
+          color: var(--accent-primary);
+          font-weight: 500;
+        }
+
+        .online-dot {
+          width: 7px; height: 7px;
+          border-radius: 50%;
+          background: var(--accent-primary);
+          box-shadow: 0 0 6px var(--success-glow);
+          animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--success-glow); }
+          50%       { opacity: 0.7; box-shadow: 0 0 12px var(--success-glow); }
+        }
+
+        /* Avatar */
+        .avatar-circle {
+          width: 40px; height: 40px;
+          border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          font-weight: 700;
+          font-size: 0.85rem;
+          color: white;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+          text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+          flex-shrink: 0;
+        }
+
+        /* Search */
         .search-bar {
-          padding: 16px 24px;
+          padding: 14px 16px;
           position: relative;
         }
 
         .search-icon {
           position: absolute;
-          left: 38px;
-          top: 50%;
+          left: 30px; top: 50%;
           transform: translateY(-50%);
           color: var(--text-muted);
           pointer-events: none;
         }
 
         .search-bar input {
-          padding-left: 44px;
+          padding-left: 40px;
           font-size: 0.85rem;
+          height: 38px;
+          border-radius: 12px;
         }
 
-        .contacts-list {
-          flex: 1;
-          overflow-y: auto;
-          padding: 0 16px 20px 16px;
+        /* Label row */
+        .contacts-label {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 4px 20px 10px;
         }
 
-        .contacts-list h2 {
-          font-size: 0.75rem;
+        .contacts-label span:first-child {
+          font-size: 0.72rem;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 1px;
           color: var(--text-muted);
-          margin: 10px 12px 16px 12px;
+        }
+
+        .contacts-count {
+          font-size: 0.72rem;
+          font-weight: 700;
+          background: rgba(0, 212, 170, 0.12);
+          color: var(--accent-primary);
+          padding: 2px 8px;
+          border-radius: 20px;
+          border: 1px solid rgba(0, 212, 170, 0.2);
+        }
+
+        /* Contacts */
+        .contacts-list {
+          flex: 1;
+          overflow-y: auto;
+          padding: 0 10px 16px;
         }
 
         .contact-item {
           display: flex;
           align-items: center;
-          padding: 12px;
-          border-radius: 16px;
+          padding: 10px 12px;
+          border-radius: 14px;
           gap: 12px;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.18s ease;
           border: 1px solid transparent;
-          margin-bottom: 4px;
+          margin-bottom: 2px;
         }
 
         .contact-item:hover {
@@ -228,81 +298,63 @@ const Sidebar = () => {
 
         .contact-item.active {
           background: var(--bg-surface-active);
-          border-color: var(--border-glass);
+          border-color: rgba(0, 212, 170, 0.2);
         }
 
-        .avatar-wrapper {
-          position: relative;
-        }
+        .avatar-wrapper { position: relative; }
 
         .status-dot {
           position: absolute;
-          bottom: 0;
-          right: 0;
-          width: 12px;
-          height: 12px;
+          bottom: 0; right: 0;
+          width: 11px; height: 11px;
           border-radius: 50%;
-          border: 2px solid #141320;
+          border: 2px solid #0c101b;
         }
 
         .status-dot.online {
           background: var(--success-color);
-          box-shadow: 0 0 8px var(--success-glow);
+          box-shadow: 0 0 6px var(--success-glow);
         }
 
-        .status-dot.offline {
-          background: #47475a;
-        }
+        .status-dot.offline { background: #2d3748; }
 
-        .contact-details {
-          flex: 1;
-          min-width: 0;
-        }
+        .contact-details { flex: 1; min-width: 0; }
 
         .contact-meta {
           display: flex;
           justify-content: space-between;
           align-items: baseline;
-          margin-bottom: 4px;
+          margin-bottom: 3px;
         }
 
         .contact-meta h4 {
-          font-size: 0.9rem;
+          font-size: 0.88rem;
           font-weight: 600;
           color: var(--text-primary);
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
 
         .last-msg-time {
-          font-size: 0.75rem;
+          font-size: 0.7rem;
           color: var(--text-muted);
           flex-shrink: 0;
         }
 
         .last-msg-text {
-          font-size: 0.8rem;
+          font-size: 0.78rem;
           color: var(--text-secondary);
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
 
         .empty-contacts {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 40px 20px;
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          padding: 48px 20px;
           color: var(--text-muted);
-          gap: 12px;
-          text-align: center;
+          gap: 10px; text-align: center;
         }
 
-        .empty-contacts p {
-          font-size: 0.85rem;
-        }
+        .empty-contacts p { font-size: 0.83rem; }
       `}</style>
     </div>
   );
