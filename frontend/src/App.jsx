@@ -59,6 +59,7 @@ const AppContent = () => {
       {/* Background ambient light effects */}
       <div className="orb orb-1"></div>
       <div className="orb orb-2"></div>
+      <div className="orb orb-3"></div>
 
       {/* Main Workspace Frame */}
       <div className={`glass-panel app-workspace ${activeContact ? 'contact-selected' : ''}`}>
@@ -74,19 +75,20 @@ const AppContent = () => {
           display: flex;
           justify-content: center;
           align-items: center;
-          padding: 24px;
+          padding: 20px;
           position: relative;
           overflow: hidden;
+          box-sizing: border-box;
         }
 
         .app-workspace {
           width: 100%;
-          max-width: 1200px;
-          height: 100%;
-          max-height: 800px;
+          max-width: 1280px;
+          height: calc(100vh - 40px);
+          max-height: 860px;
           display: flex;
           overflow: hidden;
-          animation: scaleUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+          animation: scaleUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         @keyframes scaleUp {
@@ -107,6 +109,7 @@ const AppContent = () => {
           }
 
           .app-workspace {
+            height: 100vh !important;
             max-height: 100vh !important;
             border-radius: 0 !important;
             border: none !important;
